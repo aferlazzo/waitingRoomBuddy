@@ -1,0 +1,40 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Waiting Room Buddy</title>
+<style>
+:root{font-family:system-ui,-apple-system,Segoe UI,Roboto,sans-serif;color-scheme:dark}
+*{box-sizing:border-box} body{margin:0;background:#101820;color:#f5f7f8;min-height:100vh;display:grid;place-items:center;padding:22px}
+main{width:min(680px,100%);background:#17232d;border:1px solid #31414d;border-radius:22px;padding:28px;box-shadow:0 20px 60px #0005}
+h1{font-size:clamp(30px,6vw,46px);margin:0 0 8px}.sub{color:#c4d0d8;font-size:18px;margin:0 0 26px}
+h2{font-size:17px;margin:24px 0 10px;color:#dce5ea}
+.row{display:flex;gap:10px;flex-wrap:wrap}.time button{flex:1;min-width:100px}
+button{border:1px solid #526674;background:#22333f;color:white;border-radius:12px;padding:14px 16px;font-size:16px;cursor:pointer}
+button:hover,button:focus{background:#2b4352;outline:2px solid #9dd7dc;outline-offset:2px}
+.time button.active{background:#d9f4f1;color:#102028;border-color:#d9f4f1}
+.actions{display:grid;grid-template-columns:1fr 1fr;gap:12px}.actions button{text-align:left;min-height:62px;font-size:17px}
+#panel{margin-top:22px;padding:18px;background:#0f1920;border-radius:14px;min-height:76px;color:#e5edf1;line-height:1.5}
+.small{color:#93a7b3;font-size:13px;margin-top:18px}@media(max-width:520px){.actions{grid-template-columns:1fr}main{padding:20px}}
+</style></head>
+<body><main>
+<h1>Waiting Room Buddy</h1>
+<p class="sub">Got a few minutes? I'll keep you company.</p>
+<h2>How much time do we have?</h2>
+<div class="row time" id="times">
+<button>5 min</button><button>10 min</button><button>20+ min</button><button>No idea</button>
+</div>
+<h2>What sounds good?</h2>
+<div class="actions">
+<button data-msg="Here’s the idea: I bring you one worthwhile thing without making you work for it. This prototype proves the new direction; live content comes next.">Show me something interesting</button>
+<button data-msg="This will become a short, useful snapshot of what’s happening today—without turning into an endless news feed.">What’s happening today?</button>
+<button data-msg="We can just talk. No quiz, no agenda, and no need for you to invent the perfect opening question.">Let’s talk</button>
+<button data-msg="I’ll suggest something worthwhile that fits the amount of time you selected—not homework disguised as entertainment.">Help me use this time</button>
+<button data-msg="Surprise me means I choose something worth your attention: a story, image, discovery, place, idea, or useful rabbit hole. No brain teasers.">Surprise me</button>
+</div>
+<div id="panel">Pick a time and then tap anything that sounds good.</div>
+<p class="small">Quiet by default. No microphone, camera, or location required.</p>
+</main>
+<script>
+let selected='';
+document.querySelectorAll('#times button').forEach(b=>b.onclick=()=>{document.querySelectorAll('#times button').forEach(x=>x.classList.remove('active'));b.classList.add('active');selected=b.textContent;document.querySelector('#panel').textContent='Okay — '+selected+'. Pick what sounds good.'});
+document.querySelectorAll('.actions button').forEach(b=>b.onclick=()=>{document.querySelector('#panel').textContent=(selected?selected+' — ':'')+b.dataset.msg});
+</script></body></html>
