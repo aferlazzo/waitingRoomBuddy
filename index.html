@@ -16,24 +16,27 @@ button{background:#22333f;color:white;border:1px solid #526674;border-radius:12p
 <h2>1. How much time do we have?</h2>
 <div class="times"><button onclick="setTime(this,'5 min')">5 min</button><button onclick="setTime(this,'10 min')">10 min</button><button onclick="setTime(this,'20+ min')">20+ min</button><button onclick="setTime(this,'No idea')">No idea</button></div>
 <h2>2. Pick what sounds good</h2>
-<div class="grid"><button onclick="interesting()">Show me something interesting</button><button onclick="today()">What's happening today?</button><button onclick="talk()">Let's talk</button><button onclick="useTime()">Help me use this time</button><button onclick="interesting()">Surprise me</button></div>
+<div class="grid"><button onclick="interesting()">Show me something interesting</button><button onclick="today()">What's happening today?</button><button onclick="talk()">Let's talk</button><button onclick="useTime()">Help me use this time</button><button onclick="askBuddy(&quot;surprise&quot;)">Surprise me</button></div>
 <div id="panel"><div id="title">Start here</div><div id="text">Choose a time, then choose what sounds good.</div><div id="controls"></div></div>
 <div class="small">Quiet by default. No microphone, camera, or location required.</div>
 </main>
 <script>
-var chosenTime="No idea", item=0;
-var facts=[
-["A tiny piece of history","The first text message was sent in 1992. It simply said “Merry Christmas.”"],
-["Something hiding in plain sight","Your phone has motion sensors that can detect rotation, tilt and movement through space. Most of the time they are simply waiting for software to give them something interesting to do."],
-["A scale worth thinking about","If Earth's 4.5-billion-year history were compressed into one calendar year, modern humans would arrive only in the final minutes of December 31."],
-["An odd design fact","The QWERTY keyboard was designed for mechanical typewriters in the 1800s. Descendants of that layout are still used on glass phone screens."],
-["Look around","Pick one ordinary object near you and imagine it had never been invented. What other things around you would have to be different?"]
-];
+var chosenTime="No idea";
 function out(title,text,buttons){document.getElementById("title").textContent=title;document.getElementById("text").textContent=text;document.getElementById("controls").innerHTML=buttons||""}
 function setTime(btn,t){chosenTime=t;var bs=document.querySelectorAll(".times button");for(var i=0;i<bs.length;i++)bs[i].className="";btn.className="active";out(t+" selected","Now pick what sounds good.","")}
-function interesting(){var f=facts[item%facts.length];item++;out(f[0],f[1],'<button class="primary" onclick="interesting()">Another one</button><button class="secondary" onclick="resetBuddy()">Start over</button>')}
-function today(){out("What's happening today?","This needs live information. I won't pretend canned material is today's news.",'<button class="secondary" onclick="resetBuddy()">Start over</button>')}
-function talk(){out("Let's talk","What is something you've noticed lately that made you think, “there ought to be a better way”?",'<button class="secondary" onclick="resetBuddy()">Start over</button>')}
-function useTime(){var m={"5 min":"Send one message you've been meaning to send, make one useful note, or clear five pieces of digital clutter.","10 min":"Pick one loose end you can advance from your phone and move it one real step toward finished.","20+ min":"Pick one small project and decide what 'better than when I sat down' would look like. Work only toward that.","No idea":"Start with something you can stop instantly: capture an idea, clear a few messages, or read something worthwhile."};out("Use this time · "+chosenTime,m[chosenTime],'<button class="secondary" onclick="resetBuddy()">Start over</button>')}
+async function askBuddy(mode){
+ out("Thinking…","Finding something worthwhile for you.","");
+ try{
+  var r=await fetch("/.netlify/functions/buddy",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({mode:mode,time:chosenTime})});
+  var d=await r.json(); if(!r.ok)throw new Error(d.error||"Request failed");
+  var label=mode==="use"?"Use this time":"Waiting Room Buddy";
+  var again=mode==="talk"?"":'<button class="primary" onclick="askBuddy(&quot;'+mode+'&quot;)">Another one</button>';
+  out(label,d.text,again+'<button class="secondary" onclick="resetBuddy()">Start over</button>');
+ }catch(e){out("Couldn’t reach Buddy","The AI connection did not respond. Try again in a moment.",'<button class="primary" onclick="askBuddy(&quot;'+mode+'&quot;)">Try again</button><button class="secondary" onclick="resetBuddy()">Start over</button>')}
+}
+function interesting(){askBuddy("interesting")}
+function today(){out("What's happening today?","Live current information comes next. I won't pretend canned material is today's news.",'<button class="secondary" onclick="resetBuddy()">Start over</button>')}
+function talk(){askBuddy("talk")}
+function useTime(){askBuddy("use")}
 function resetBuddy(){chosenTime="No idea";var bs=document.querySelectorAll(".times button");for(var i=0;i<bs.length;i++)bs[i].className="";out("Start here","Choose a time, then choose what sounds good.","")}
 </script></body></html>
