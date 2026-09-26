@@ -2,15 +2,17 @@
 <html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
 <title>Waiting Room Buddy</title><style>
 :root{font-family:system-ui,-apple-system,Segoe UI,Roboto,sans-serif;color-scheme:dark}*{box-sizing:border-box}
-body{margin:0;background:#101820;color:#f5f7f8;min-height:100vh;display:grid;place-items:center;padding:22px}
-main{width:min(720px,100%);background:#17232d;border:1px solid #31414d;border-radius:22px;padding:28px}
-h1{font-size:clamp(30px,6vw,46px);margin:0 0 8px}.sub{color:#c4d0d8;font-size:18px;margin:0 0 24px}h2{font-size:17px;margin:22px 0 10px}
+body{margin:0;background:#101820;color:#f5f7f8;min-height:100vh;display:grid;place-items:center;padding:18px}
+main{width:min(720px,100%);background:#17232d;border:1px solid #31414d;border-radius:22px;padding:26px}
+h1{font-size:clamp(30px,6vw,46px);margin:0 0 8px}.sub{color:#c4d0d8;font-size:18px;margin:0 0 22px}h2{font-size:17px;margin:20px 0 10px}
 .row{display:flex;gap:10px;flex-wrap:wrap}.time button{flex:1;min-width:100px}
 button{border:1px solid #526674;background:#22333f;color:white;border-radius:12px;padding:14px 16px;font-size:16px;cursor:pointer}
 button:hover,button:focus{background:#2b4352;outline:2px solid #9dd7dc;outline-offset:2px}.time button.active{background:#d9f4f1;color:#102028}
 .actions{display:grid;grid-template-columns:1fr 1fr;gap:12px}.actions button{text-align:left;min-height:62px;font-size:17px}
-#panel{margin-top:22px;padding:20px;background:#0f1920;border-radius:14px;min-height:110px;line-height:1.5;font-size:18px}
-#panel strong{display:block;margin-bottom:8px}.next{margin-top:14px;color:#b9cbd5}.small{color:#93a7b3;font-size:13px;margin-top:18px}
+#panel{margin-top:22px;padding:20px;background:#0f1920;border-radius:14px;min-height:130px;line-height:1.5;font-size:18px}
+#panel strong{display:block;margin-bottom:8px}.small{color:#93a7b3;font-size:13px;margin-top:18px}
+.primary{margin-top:16px;width:100%;background:#d9f4f1;color:#102028;font-weight:700}.secondary{margin-top:10px;width:100%}
+.fact{font-size:20px;line-height:1.55}.tag{color:#9dd7dc;font-size:14px;text-transform:uppercase;letter-spacing:.06em;margin-bottom:7px}
 @media(max-width:520px){.actions{grid-template-columns:1fr}main{padding:20px}}
 </style></head><body><main>
 <h1>Waiting Room Buddy</h1><p class="sub">Got a few minutes? I'll keep you company.</p>
@@ -21,15 +23,28 @@ button:hover,button:focus{background:#2b4352;outline:2px solid #9dd7dc;outline-o
 <div id="panel"><strong>Start here</strong>Choose a time, then choose one of the five options above. I'll take it from there.</div>
 <p class="small">Quiet by default. No microphone, camera, or location required.</p>
 </main><script>
-let selected='';
-const messages={
-interesting:["Something interesting","Good choice. The finished Buddy will immediately bring you one worthwhile story, discovery, image, or idea.","Next: read it, ask about it, or tap another choice."],
-today:["What's happening today?","The finished Buddy will give you a short, useful snapshot of what's worth knowing today—not an endless news feed.","Next: open one item that catches your attention or ask for something different."],
-talk:["Let's talk","The Buddy will start the conversation so you don't have to think up a topic first.","Next: type naturally and we'll talk for as long as you have."],
-use:["Use this time","The Buddy will offer a few useful things that actually fit your available time.","Next: pick one and the Buddy helps you do it."],
-surprise:["Surprise me","The Buddy chooses something worth your attention. No quizzes and no brain teasers.","Next: enjoy it, follow the rabbit hole, or say 'another one.'"]
+let selected='',kind='',idx=0;
+const items=[
+["A tiny piece of history","The first text message was sent in 1992. It simply said “Merry Christmas.” What became an everyday way of communicating began as a two-word experiment."],
+["Something hiding in plain sight","Your phone contains motion sensors sensitive enough to tell whether it is lying flat, being rotated, or moving through space. Most of the day, those sensors are sitting there waiting for software to invent a reason to use them."],
+["A scale worth thinking about","If Earth's 4.5-billion-year history were compressed into one calendar year, modern humans would arrive only in the final minutes of December 31."],
+["An odd design fact","The QWERTY keyboard layout was created for mechanical typewriters in the 1800s. We still use descendants of that physical-machine layout on glass phone screens today."],
+["A useful thought experiment","Look around the room and pick one ordinary object. Ask: if this object had never been invented, what else would have to be different? Mundane objects often have surprisingly deep family trees."]
+];
+const useIdeas={
+"5 min":"Pick one nagging little task: send one message, make one note, delete five junk photos, or write down the next action on something you've been postponing.",
+"10 min":"Choose one loose end you can actually advance from your phone. Spend ten minutes getting it one step closer to finished—not researching it forever.",
+"20+ min":"You have enough time to make a dent. Pick one small project, define what 'better than when I sat down' means, and work only toward that.",
+"No idea":"Start with something that can be stopped instantly: clear a few messages, capture an idea, organize a short list, or read something worthwhile."
 };
-document.querySelectorAll('#times button').forEach(b=>b.onclick=()=>{document.querySelectorAll('#times button').forEach(x=>x.classList.remove('active'));b.classList.add('active');selected=b.textContent;document.querySelector('#panel').innerHTML='<strong>Time selected: '+selected+'</strong>Now choose one of the five options above. I’ll take it from there.'});
-document.querySelectorAll('.actions button').forEach(b=>b.onclick=()=>{const m=messages[b.dataset.kind];document.querySelector('#panel').innerHTML='<strong>'+m[0]+(selected?' · '+selected:'')+'</strong>'+m[1]+'<div class="next"><b>'+m[2].split(':')[0]+':</b>'+m[2].split(':').slice(1).join(':')+'</div><button id="continueBtn" style="margin-top:16px;width:100%;background:#d9f4f1;color:#102028;font-weight:700">Continue →</button>'});
-document.addEventListener('click',e=>{if(e.target&&e.target.id==='continueBtn'){document.querySelector('#panel').innerHTML='<strong>Coming next</strong>This button is now part of the flow. The next build will make it actually deliver the selected Buddy experience instead of stopping at an explanation.'}});
+function panel(html){document.querySelector('#panel').innerHTML=html}
+function showItem(){const x=items[idx++%items.length];panel('<div class="tag">'+x[0]+'</div><div class="fact">'+x[1]+'</div><button class="primary" id="another">Another one →</button><button class="secondary" id="home">Start over</button>')}
+document.querySelectorAll('#times button').forEach(b=>b.onclick=()=>{document.querySelectorAll('#times button').forEach(x=>x.classList.remove('active'));b.classList.add('active');selected=b.textContent;panel('<strong>'+selected+' selected</strong>Now pick what sounds good. No test, no quiz, no homework.')});
+document.querySelectorAll('.actions button').forEach(b=>b.onclick=()=>{kind=b.dataset.kind;
+if(kind==='interesting'||kind==='surprise') showItem();
+else if(kind==='use') panel('<strong>Use this time · '+(selected||'No time selected')+'</strong>'+useIdeas[selected||'No idea']+'<button class="primary" id="anotherUse">Give me another idea →</button><button class="secondary" id="home">Start over</button>');
+else if(kind==='talk') panel('<strong>Let’s talk</strong>Here’s a better opening than a quiz: <em>What’s something you’ve noticed lately that made you think, “there ought to be a better way”?</em><div class="small">Real back-and-forth AI conversation is the next technical step; this build is testing whether the opening feels right.</div><button class="secondary" id="home">Start over</button>');
+else panel('<strong>What’s happening today?</strong>This one should use live information, so I’m not going to fake it with canned “news.” The next build will connect this door to fresh information.<button class="secondary" id="home">Start over</button>');
+});
+document.addEventListener('click',e=>{if(e.target.id==='another')showItem();if(e.target.id==='anotherUse'){const opts=["Send one message you've been meaning to send.","Write down three things you don't want to forget today.","Clean up one tiny digital mess: five photos, five emails, or five browser tabs.","Take one project and write only its very next physical action."];panel('<strong>Try this</strong>'+opts[Math.floor(Math.random()*opts.length)]+'<button class="primary" id="anotherUse">Another idea →</button><button class="secondary" id="home">Start over</button>')}if(e.target.id==='home'){selected='';kind='';document.querySelectorAll('#times button').forEach(x=>x.classList.remove('active'));panel('<strong>Start here</strong>Choose a time, then choose one of the five options above. I’ll take it from there.')}});
 </script></body></html>
