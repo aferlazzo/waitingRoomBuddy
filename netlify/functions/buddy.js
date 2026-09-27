@@ -1,6 +1,18 @@
 exports.handler = async function(event) {
-  if (event.httpMethod !== "POST") return {statusCode:405,body:"Method not allowed"};
+  const json = (statusCode, body) => ({
+    statusCode,
+    headers: {"Content-Type":"application/json","Cache-Control":"no-store"},
+    body: JSON.stringify(body)
+  });
+
+  if (event.httpMethod === "GET") {
+    return json(200, {ok:true, service:"Waiting Room Buddy", keyConfigured:Boolean(process.env.OPENAI_API_KEY)});
+  }
+  if (event.httpMethod !== "POST") return json(405,{error:"Method not allowed"});
+
   try {
+    if (!process.env.OPENAI_API_KEY) return json(500,{error:"WRB server is missing its OpenAI API key."});
+
     const body=JSON.parse(event.body||"{}");
     const mode=body.mode||"interesting";
     const time=body.time||"No idea";
@@ -10,14 +22,31 @@ exports.handler = async function(event) {
       use:"Suggest one useful, concrete thing a person can accomplish from a phone while waiting for "+time+". It should feel worthwhile, not like busywork. 50-100 words.",
       talk:"Start a natural conversation like an interesting companion. Offer one specific observation or topic and invite a response without interrogating the user. 50-100 words."
     };
-    const resp=await fetch("https://api.openai.com/v1/responses",{method:"POST",headers:{"Content-Type":"application/json","Authorization":"Bearer "+process.env.OPENAI_API_KEY},body:JSON.stringify({model:"gpt-5.6-luna",input:[{role:"system",content:"You are Waiting Room Buddy: quiet, warm, concise, interesting, and useful. Never act like a quizmaster."},{role:"user",content:prompts[mode]||prompts.interesting}],max_output_tokens:220})});
+
+    const resp=await fetch("https://api.openai.com/v1/responses",{
+      method:"POST",
+      headers:{"Content-Type":"application/json","Authorization":"Bearer "+process.env.OPENAI_API_KEY},
+      body:JSON.stringify({
+        model:"gpt-5.6-luna",
+        input:[
+          {role:"system",content:"You are Waiting Room Buddy: quiet, warm, concise, interesting, and useful. Never act like a quizmaster."},
+          {role:"user",content:prompts[mode]||prompts.interesting}
+        ],
+        max_output_tokens:220
+      })
+    });
+
     const data=await resp.json();
-    if(!resp.ok) throw new Error((data.error&&data.error.message)||"OpenAI request failed");
+    if(!resp.ok) {
+      const message=(data.error&&data.error.message)||"OpenAI request failed";
+      return json(resp.status,{error:message});
+    }
+
     let text="";
     if(data.output_text) text=data.output_text;
     else if(data.output) for(const o of data.output) if(o.content) for(const p of o.content) if(p.text) text+=p.text;
-    return {statusCode:200,headers:{"Content-Type":"application/json"},body:JSON.stringify({text:text||"I couldn't come up with something just now. Try again."})};
+    return json(200,{text:text||"I couldn't come up with something just now. Try again."});
   } catch(e) {
-    return {statusCode:500,headers:{"Content-Type":"application/json"},body:JSON.stringify({error:e.message})};
+    return json(500,{error:e && e.message ? e.message : "Unexpected WRB server error"});
   }
 };
