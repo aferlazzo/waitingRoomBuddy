@@ -11,7 +11,10 @@ exports.handler = async function(event) {
   if (event.httpMethod !== "POST") return json(405,{error:"Method not allowed"});
 
   try {
-    if (!process.env.OPENAI_API_KEY) return json(500,{error:"WRB server is missing its OpenAI API key."});
+    if (!process.env.OPENAI_API_KEY) {
+      console.error("WRB CONFIG ERROR: OPENAI_API_KEY is missing");
+      return json(500,{error:"WRB server is missing its OpenAI API key."});
+    }
 
     const body=JSON.parse(event.body||"{}");
     const mode=body.mode||"interesting";
@@ -36,17 +39,26 @@ exports.handler = async function(event) {
       })
     });
 
-    const data=await resp.json();
+    const raw=await resp.text();
+    let data={};
+    try { data=raw ? JSON.parse(raw) : {}; } catch (_) { data={}; }
+
     if(!resp.ok) {
-      const message=(data.error&&data.error.message)||"OpenAI request failed";
+      const message=(data.error&&data.error.message)||raw||"OpenAI request failed";
+      const code=(data.error&&data.error.code)||"unknown";
+      const type=(data.error&&data.error.type)||"unknown";
+      console.error("WRB OPENAI ERROR", JSON.stringify({status:resp.status, code, type, message}));
       return json(resp.status,{error:message});
     }
 
     let text="";
     if(data.output_text) text=data.output_text;
     else if(data.output) for(const o of data.output) if(o.content) for(const p of o.content) if(p.text) text+=p.text;
+    console.log("WRB OPENAI SUCCESS", JSON.stringify({mode,status:resp.status,hasText:Boolean(text)}));
     return json(200,{text:text||"I couldn't come up with something just now. Try again."});
   } catch(e) {
-    return json(500,{error:e && e.message ? e.message : "Unexpected WRB server error"});
+    const message=e && e.message ? e.message : "Unexpected WRB server error";
+    console.error("WRB SERVER ERROR", message);
+    return json(500,{error:message});
   }
 };
