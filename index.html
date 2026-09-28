@@ -1,6 +1,11 @@
 <!doctype html>
 <html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
 <title>Waiting Room Buddy</title>
+<link rel="manifest" href="/manifest.webmanifest">
+<meta name="theme-color" content="#101820">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="WRB">
 <style>
 *{box-sizing:border-box}body{margin:0;background:#101820;color:#f5f7f8;font-family:Arial,sans-serif;padding:18px}
 main{max-width:680px;margin:auto;background:#17232d;border-radius:20px;padding:22px}
@@ -44,4 +49,5 @@ function today(){askBuddy("today")}
 function talk(){askBuddy("talk")}
 function useTime(){askBuddy("use")}
 function resetBuddy(){chosenTime="No idea";var bs=document.querySelectorAll(".times button");for(var i=0;i<bs.length;i++)bs[i].className="";out("Start here","Choose a time, then choose what sounds good.","")}
+if("serviceWorker" in navigator){window.addEventListener("load",function(){navigator.serviceWorker.register("/sw.js").catch(function(){});});}
 </script></body></html>
