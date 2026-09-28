@@ -31,6 +31,7 @@ exports.handler = async function(event) {
       headers:{"Content-Type":"application/json","Authorization":"Bearer "+process.env.OPENAI_API_KEY},
       body:JSON.stringify({
         model:"gpt-5.6-luna",
+        reasoning:{effort:"none"},
         input:[
           {role:"system",content:"You are Waiting Room Buddy: quiet, warm, concise, interesting, and useful. Never act like a quizmaster."},
           {role:"user",content:prompts[mode]||prompts.interesting}
