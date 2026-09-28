@@ -40,8 +40,7 @@ async function askBuddy(mode){
  }
 }
 function interesting(){askBuddy("interesting")}
-function today(){out("What's happening today?","Live current information comes next. I won't pretend canned material is today's news.",'<button class="secondary" onclick="resetBuddy()">Start over</button>')}
-function talk(){askBuddy("talk")}
+function today(){askBuddy("today")}\nfunction talk(){askBuddy("talk")}
 function useTime(){askBuddy("use")}
 function resetBuddy(){chosenTime="No idea";var bs=document.querySelectorAll(".times button");for(var i=0;i<bs.length;i++)bs[i].className="";out("Start here","Choose a time, then choose what sounds good.","")}
 </script></body></html>
