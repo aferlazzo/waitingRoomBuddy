@@ -21,6 +21,7 @@ exports.handler = async function(event) {
     const time=body.time||"No idea";
     const prompts={
       interesting:"Give one genuinely interesting, surprising, accurate thing for an adult to enjoy while waiting. No quiz, no brain teaser, no homework. 70-130 words. Vary subjects widely. Do not repeat common trivia.",
+      today:"Give a concise useful snapshot of notable things happening today. Use web search for current information. Mention 3-5 items across different subjects when possible, avoid sensationalism, and make clear these are current as of today. 100-180 words.",
       surprise:"Surprise the user with one fascinating short idea, story, observation, science fact, historical detail, or thought-provoking connection. No quiz or brain teaser. 70-130 words.",
       use:"Suggest one useful, concrete thing a person can accomplish from a phone while waiting for "+time+". It should feel worthwhile, not like busywork. 50-100 words.",
       talk:"Start a natural conversation like an interesting companion. Offer one specific observation or topic and invite a response without interrogating the user. 50-100 words."
@@ -32,6 +33,7 @@ exports.handler = async function(event) {
       body:JSON.stringify({
         model:"gpt-5.6-luna",
         reasoning:{effort:"none"},
+        tools: mode==="today" ? [{type:"web_search"}] : [],
         input:[
           {role:"system",content:"You are Waiting Room Buddy: quiet, warm, concise, interesting, and useful. Never act like a quizmaster."},
           {role:"user",content:prompts[mode]||prompts.interesting}
