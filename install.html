@@ -1,0 +1,116 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Install Waiting Room Buddy</title>
+<link rel="manifest" href="/manifest.webmanifest?release=wrb-02">
+<meta name="theme-color" content="#101820">
+<link rel="icon" href="/wrb-icon-192.png">
+<script>
+var wrbPrompt = null;
+window.addEventListener('beforeinstallprompt', function(event) {
+  event.preventDefault(); wrbPrompt = event;
+  if (window.wrbUpdate) window.wrbUpdate();
+});
+</script>
+<style>
+*{box-sizing:border-box}body{margin:0;padding:24px;background:#101820;color:#f5f7f8;font:18px/1.5 Arial,sans-serif}main{max-width:600px;margin:auto;padding:24px;background:#17232d;border-radius:20px}img{width:96px;height:96px}h1{font-size:28px;line-height:1.2}button,a.action{display:block;width:100%;padding:16px;border:0;border-radius:12px;background:#d9f4f1;color:#102028;font-size:18px;font-weight:bold;text-align:center;text-decoration:none}button:disabled{opacity:.55}a{color:#9cebea}.version{font-size:14px;color:#b9cbd4}#report{white-space:pre-line;font-size:14px;overflow-wrap:anywhere}#status{font-weight:bold}
+</style>
+</head>
+<body><main>
+<img src="/wrb-icon-192.png" alt="Waiting Room Buddy icon">
+<h1>Install Waiting Room Buddy</h1>
+<p class="version">WRB installation page Â· version 02</p>
+<p id="status" role="status">Checking this browser for installationâ€¦</p>
+<button id="install" disabled>Install Waiting Room Buddy</button>
+<p id="next">This page checks installation separately from the Buddy screen.</p>
+<p><a href="/">Open Waiting Room Buddy</a></p>
+<details open><summary>Installation report</summary><p id="report">Loading installation checkâ€¦</p></details>
+</main>
+<script>
+(function() {
+  var button = document.getElementById('install');
+  var status = document.getElementById('status');
+  var next = document.getElementById('next');
+  var report = document.getElementById('report');
+  var helper = 'checking', manifest = 'checking', icons = 'checking';
+  var installed = false, requested = false;
+  function standalone() { return window.matchMedia('(display-mode: standalone)').matches || navigator.standalone === true; }
+  window.wrbUpdate = function() {
+    button.disabled = !wrbPrompt || requested || installed || standalone();
+    if (standalone()) {
+      status.textContent = 'WRB is running in standalone app mode.';
+      next.textContent = 'Use Open Waiting Room Buddy to continue into the app.';
+    } else if (installed) {
+      status.textContent = 'Chrome reported that WRB was installed.';
+      next.textContent = 'Close this browser tab and open the WRB icon in your apps.';
+    } else if (requested) {
+      status.textContent = 'Installation requested; waiting for Chrome to finish.';
+      next.textContent = 'When installation finishes, look for the WRB icon in your apps.';
+    } else if (wrbPrompt) {
+      status.textContent = 'Ready to install Waiting Room Buddy.';
+      next.textContent = 'Tap Install Waiting Room Buddy and approve the browserâ€™s installation prompt.';
+    } else {
+      status.textContent = 'Chrome has not offered WRB installation on this page yet.';
+      next.textContent = 'The report below shows what this device has verified. A working web page is still available through Open Waiting Room Buddy.';
+    }
+    report.textContent = [
+      'Version: wrb-install-02',
+      'Address: ' + location.href,
+      'Secure connection: ' + (window.isSecureContext ? 'yes' : 'no'),
+      'Device: ' + (/Android/i.test(navigator.userAgent) ? 'Android' : 'not Android'),
+      'Launch mode: ' + (standalone() ? 'standalone app' : 'browser'),
+      'Manifest: ' + manifest,
+      '192 / 512 icons: ' + icons,
+      'App helper: ' + helper,
+      'Browser offers installation: ' + (wrbPrompt ? 'yes' : 'not currently'),
+      'Browser: ' + navigator.userAgent
+    ].join('\n');
+  };
+  button.addEventListener('click', async function() {
+    var prompt = wrbPrompt;
+    if (!prompt) return;
+    button.disabled = true;
+    try {
+      await prompt.prompt();
+      var choice = await prompt.userChoice;
+      wrbPrompt = null;
+      requested = choice.outcome === 'accepted';
+      window.wrbUpdate();
+      if (!requested) { status.textContent = 'Installation was cancelled.'; }
+    } catch (error) {
+      wrbPrompt = null; window.wrbUpdate();
+      status.textContent = 'Installation could not finish: ' + error.message;
+    }
+  });
+  window.addEventListener('appinstalled', function() { installed = true; requested = false; wrbPrompt = null; window.wrbUpdate(); });
+  navigator.serviceWorker && navigator.serviceWorker.addEventListener('controllerchange', function() { helper = 'active'; window.wrbUpdate(); });
+  window.wrbUpdate();
+  (async function() {
+    try {
+      var response = await fetch('/manifest.webmanifest?release=wrb-02', {cache:'no-store'});
+      if (!response.ok) throw new Error('HTTP ' + response.status);
+      var data = await response.json();
+      manifest = data.name === 'Waiting Room Buddy' && data.display === 'standalone' && data.id === '/' ? 'WRB identity / standalone verified' : 'unexpected identity or launch setting';
+      var images = await Promise.all([192,512].map(function(size) { return new Promise(function(resolve,reject) {
+        var image = new Image();
+        image.onload = function() { image.naturalWidth === size && image.naturalHeight === size ? resolve() : reject(new Error('wrong icon size')); };
+        image.onerror = function() { reject(new Error('icon did not load')); };
+        image.src = '/wrb-icon-' + size + '.png';
+      }); }));
+      icons = 'loaded at correct sizes';
+    } catch (error) { if (manifest === 'checking') manifest = 'failed: ' + error.message; else icons = 'failed: ' + error.message; }
+    window.wrbUpdate();
+    try {
+      if (!('serviceWorker' in navigator)) throw new Error('not supported in this browser');
+      var registration = await navigator.serviceWorker.register('/sw.js?release=wrb-02', {scope:'/',updateViaCache:'none'});
+      await registration.update();
+      await navigator.serviceWorker.ready;
+      helper = 'active';
+    } catch (error) { helper = 'failed: ' + error.message; }
+    window.wrbUpdate();
+  })();
+})();
+</script>
+</body></html>
