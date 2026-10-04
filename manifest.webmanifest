@@ -2,6 +2,7 @@
   "name": "Waiting Room Buddy",
   "short_name": "WRB",
   "description": "A quiet companion for the time you spend waiting.",
+  "id": "/",
   "start_url": "/",
   "scope": "/",
   "display": "standalone",
@@ -12,7 +13,7 @@
       "src": "/wrb-icon.svg",
       "sizes": "any",
       "type": "image/svg+xml",
-      "purpose": "any maskable"
+      "purpose": "any"
     }
   ]
 }
