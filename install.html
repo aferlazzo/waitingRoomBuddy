@@ -21,12 +21,12 @@ window.addEventListener('beforeinstallprompt', function(event) {
 <body><main>
 <img src="/wrb-icon-192.png" alt="Waiting Room Buddy icon">
 <h1>Install Waiting Room Buddy</h1>
-<p class="version">WRB installation page Â· version 02</p>
-<p id="status" role="status">Checking this browser for installationâ€¦</p>
+<p class="version">WRB installation page - version 02</p>
+<p id="status" role="status">Checking this browser for installation…</p>
 <button id="install" disabled>Install Waiting Room Buddy</button>
 <p id="next">This page checks installation separately from the Buddy screen.</p>
 <p><a href="/">Open Waiting Room Buddy</a></p>
-<details open><summary>Installation report</summary><p id="report">Loading installation checkâ€¦</p></details>
+<details open><summary>Installation report</summary><p id="report">Loading installation check…</p></details>
 </main>
 <script>
 (function() {
@@ -50,7 +50,7 @@ window.addEventListener('beforeinstallprompt', function(event) {
       next.textContent = 'When installation finishes, look for the WRB icon in your apps.';
     } else if (wrbPrompt) {
       status.textContent = 'Ready to install Waiting Room Buddy.';
-      next.textContent = 'Tap Install Waiting Room Buddy and approve the browserâ€™s installation prompt.';
+      next.textContent = 'Tap Install Waiting Room Buddy and approve the browser's installation prompt.';
     } else {
       status.textContent = 'Chrome has not offered WRB installation on this page yet.';
       next.textContent = 'The report below shows what this device has verified. A working web page is still available through Open Waiting Room Buddy.';
