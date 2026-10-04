@@ -1,0 +1,10 @@
+[[redirects]]
+  from = "/api/buddy"
+  to = "/.netlify/functions/buddy"
+  status = 200
+  force = true
+
+  [redirects.rate_limit]
+    window_limit = 5
+    window_size = 180
+    aggregate_by = ["domain", "ip"]
