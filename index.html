@@ -39,7 +39,20 @@ var chosenTime="No idea";
 function out(title,text,buttons){document.getElementById("title").textContent=title;document.getElementById("text").innerHTML=text;document.getElementById("controls").innerHTML=buttons||""}
 function setTime(btn,t){chosenTime=t;var bs=document.querySelectorAll(".times button");for(var i=0;i<bs.length;i++)bs[i].className="";btn.className="active";out(t+" selected","Now pick what sounds good.","")}
 function esc(s){var d=document.createElement("div");d.textContent=s;return d.innerHTML}
+function wrbDailyAllowance(){
+ const key="wrb-ai-usage-v1",today=new Date().toISOString().slice(0,10),limit=20;
+ let u={date:today,count:0};
+ try{const saved=JSON.parse(localStorage.getItem(key)||"{}");if(saved.date===today)u=saved}catch(_){}
+ return {key:key,today:today,count:Number(u.count)||0,limit:limit};
+}
+function wrbUseOne(){
+ const u=wrbDailyAllowance();
+ if(u.count>=u.limit)return false;
+ try{localStorage.setItem(u.key,JSON.stringify({date:u.today,count:u.count+1}))}catch(_){}
+ return true;
+}
 async function askBuddy(mode){
+ if(!wrbUseOne()){out("Buddy is resting","This device has reached WRB’s 20 AI requests for today. The allowance resets tomorrow.","");return;}
  out("Thinking…","Finding something worthwhile for you.","");
  try{
   var r=await fetch("/api/buddy",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({mode:mode,time:chosenTime})});
