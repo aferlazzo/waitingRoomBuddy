@@ -42,7 +42,7 @@ function esc(s){var d=document.createElement("div");d.textContent=s;return d.inn
 async function askBuddy(mode){
  out("Thinking…","Finding something worthwhile for you.","");
  try{
-  var r=await fetch("/.netlify/functions/buddy",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({mode:mode,time:chosenTime})});
+  var r=await fetch("/api/buddy",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({mode:mode,time:chosenTime})});
   var raw=await r.text(),d={};
   try{d=JSON.parse(raw)}catch(_){d={error:"WRB received an unexpected server response ("+r.status+")."}}
   if(!r.ok)throw new Error(d.error||("WRB request failed ("+r.status+")."));
