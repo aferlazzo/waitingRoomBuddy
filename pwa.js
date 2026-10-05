@@ -1,6 +1,6 @@
 /* Installation support; Buddy's existing interaction stays in index.html. */
 (() => {
-  const release = 'wrb-20261003-01';
+  const release = 'wrb-20261004-02';
   const button = document.getElementById('installWRB');
   const status = document.getElementById('installStatus');
   const standalone = () => window.matchMedia('(display-mode: standalone)').matches || navigator.standalone === true;
@@ -9,17 +9,24 @@
     if (standalone()) {
       button.classList.add('hidden');
       showStatus('Waiting Room Buddy is running as an app.');
-    } else if (window.__wrbInstallPrompt) {
+    } else {
       button.disabled = false;
-      button.textContent = 'Install Waiting Room Buddy';
+      button.textContent = window.__wrbInstallPrompt ? 'Install Waiting Room Buddy' : 'Install WRB';
       button.classList.remove('hidden');
-      showStatus('Waiting Room Buddy is ready to install.');
+      showStatus(window.__wrbInstallPrompt ? 'Waiting Room Buddy is ready to install.' : 'Install WRB on this device.');
     }
   }
   window.__wrbShowInstall = refresh;
   button.addEventListener('click', async () => {
     const prompt = window.__wrbInstallPrompt;
-    if (!prompt) return;
+    if (!prompt) {
+      if (/Android/i.test(navigator.userAgent)) {
+        showStatus('Android has not offered the automatic installer. Open WRB from Chrome, then use Chrome’s Install app or Add to Home screen command.');
+      } else {
+        showStatus('This browser has not offered automatic installation. Use its Install or Add to Home Screen command.');
+      }
+      return;
+    }
     button.disabled = true;
     try {
       await prompt.prompt();
