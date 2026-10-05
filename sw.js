@@ -1,4 +1,4 @@
-const CACHE = 'wrb-v3-20261003';
+const CACHE = 'wrb-v4-20261004';
 const CORE = ['/', '/index.html', '/pwa.js', '/manifest.webmanifest', '/wrb-icon.svg', '/wrb-icon-192.png', '/wrb-icon-512.png'];
 self.addEventListener('install', event => event.waitUntil(
   caches.open(CACHE).then(cache => cache.addAll(CORE)).then(() => self.skipWaiting())
