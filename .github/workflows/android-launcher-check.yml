@@ -36,6 +36,7 @@ jobs:
           api-level: 35
           target: google_apis
           arch: x86_64
+          profile: pixel_2
           disable-animations: true
           script: |
             adb install launcher-evidence/WRB-v1.apk
@@ -44,17 +45,19 @@ jobs:
             adb shell cmd package resolve-activity --brief -a android.intent.action.MAIN -c android.intent.category.LAUNCHER com.tonyferlazzo.wrb | tee launcher-evidence/resolved-launcher.txt
             grep 'com.tonyferlazzo.wrb/com.google.androidbrowserhelper.trusted.LauncherActivity' launcher-evidence/resolved-launcher.txt
             adb logcat -b crash -c
-            adb shell am start -W -a android.intent.action.MAIN -c android.intent.category.LAUNCHER -p com.tonyferlazzo.wrb | tee launcher-evidence/first-launch.txt
-            grep 'Status: ok' launcher-evidence/first-launch.txt
+            adb shell monkey -p com.tonyferlazzo.wrb -c android.intent.category.LAUNCHER 1 | tee launcher-evidence/first-launch.txt
+            grep 'Events injected: 1' launcher-evidence/first-launch.txt
             adb shell am force-stop com.tonyferlazzo.wrb
             adb shell input keyevent KEYCODE_HOME
             adb shell cmd package resolve-activity --brief -a android.intent.action.MAIN -c android.intent.category.LAUNCHER com.tonyferlazzo.wrb | tee launcher-evidence/after-close.txt
             grep 'com.tonyferlazzo.wrb/com.google.androidbrowserhelper.trusted.LauncherActivity' launcher-evidence/after-close.txt
-            adb shell am start -W -a android.intent.action.MAIN -c android.intent.category.LAUNCHER -p com.tonyferlazzo.wrb | tee launcher-evidence/reopen.txt
-            grep 'Status: ok' launcher-evidence/reopen.txt
+            adb shell monkey -p com.tonyferlazzo.wrb -c android.intent.category.LAUNCHER 1 | tee launcher-evidence/reopen.txt
+            grep 'Events injected: 1' launcher-evidence/reopen.txt
             adb shell am force-stop com.tonyferlazzo.wrb
             adb shell input keyevent KEYCODE_HOME
-            adb shell input swipe 540 1800 540 300 500
+            sleep 2
+            adb shell input swipe 540 1700 540 300 500
+            sleep 2
             adb shell uiautomator dump /sdcard/launcher.xml
             adb pull /sdcard/launcher.xml launcher-evidence/launcher.xml
             adb exec-out screencap -p > launcher-evidence/launcher.png
