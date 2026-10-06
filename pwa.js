@@ -1,6 +1,6 @@
 /* Installation support; Buddy's existing interaction stays in index.html. */
 (() => {
-  const release = 'wrb-20261006-03';
+  const release = 'wrb-20261006-04';
   const button = document.getElementById('installWRB');
   const status = document.getElementById('installStatus');
   const standalone = () => window.matchMedia('(display-mode: standalone)').matches || navigator.standalone === true;
