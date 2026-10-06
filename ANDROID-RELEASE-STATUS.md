@@ -26,3 +26,42 @@ Additional emulator verification: https://github.com/aferlazzo/waitingRoomBuddy/
 - Evidence artifact: WRB-launcher-evidence.
 
 The initial added test used an unsuitable implicit am-start command and failed despite resolving the launcher activity. The corrected successful test uses launcher discovery via monkey. Neither ADB installation nor these emulator checks reproduce Play Protect's physical-Pixel installation flow. There is no remote Pixel connection in this session; do not claim that Tony's installation is fixed or that the emulator proves his phone has an icon.
+
+
+## Continuation audit — October 6, 2026
+
+Production main remains 85ff36ee46c1281ecd67c8ca4df236ba702aee25. No replacement repository, website or Android application was created. The original signed v1 package and unpublished signed v3 candidate were preserved.
+
+Draft PR: https://github.com/aferlazzo/waitingRoomBuddy/pull/1
+Preview installer: https://deploy-preview-1--waitingroombuddy.netlify.app/android-install.html
+
+Prepared website changes: download the existing signed v3 candidate; direct native setup/open intents; remove beforeinstallprompt dependency; preserve Buddy's offline shell when visiting the installer. Matching v3 Android source is saved in this review branch. Local installer routing and cache checks passed. Netlify preview APK returns HTTP 200 and application/vnd.android.package-archive; its SHA-256 matches the existing signed candidate: aaaf1ff8ed21ec85ad2986a31eee7d3eb5a7c6592007de901840320f942fda79.
+
+Original v1 upgrade, fresh v3 install, Android's actual pin prompt, pinned state and reinstall persistence passed in emulator run 37507410947. Those early checks inadvertently launched the suggested dock icon; they do not prove the pinned icon opens Buddy.
+
+Stricter pinned-icon diagnostics: https://github.com/aferlazzo/HelpMe/actions/runs/37510462750
+The actual pinned shortcut invokes wrb://open. Logs then show LauncherActivity launched twice: first without NEW_TASK, then with it after the helper restarts itself. Buddy never appears and setup remains foreground. Chrome's CustomTabsConnectionService exists, so the browser is present. This matches the helper's restartInNewTask/sLauncherActivitiesAlive code path. Treat the missing task flag as a diagnosed likely cause; the proposed correction is not yet built or verified.
+
+Proposed incremental correction: ACTION_VIEW with the existing HTTPS WRB URL plus FLAG_ACTIVITY_NEW_TASK in HomeActivity.openBuddy. A new versionCode 4 (same package and signing key) is needed to deliver this binary change. Keep original signed APKs. Do not publish the v3 candidate as a verified standalone release.
+
+Automatic approval review initially rejected the incremental build because the user's instruction said not to rebuild. The owner subsequently explicitly approved this specific incremental correction. The existing protected signing key remains configured. Physical Android/Play Protect prompts were not verified, and no physical-device fix is claimed.
+
+## Approved incremental correction — October 6, 2026
+
+Signed version 1.2 (code 4) was produced by the existing protected pipeline in run 37512867753. Its certificate matches the original release and production assetlinks.json. SHA-256: fee3358855094311c1ecb081b83da95e6e80f5a965a4507eab0b9145fe309a7e. The original and v3 packages are retained.
+
+The initial v4 run passed the v1-to-v4 upgrade, Android pin confirmation, actual pinned-icon launch, visible Buddy website, and absence of browser toolbar, but failed its later setup recovery assertion. Retest 37513938420 additionally passed reopening after force-stop and pin retention after reinstall, then showed that the fresh-install setup request could be delivered to the existing Buddy task instead of bringing native setup forward. Its captured setup command returned the Chrome activity with result code 3.
+
+The website setup intent now explicitly includes NEW_TASK | CLEAR_TOP (launchFlags=0x14000000), which Chromium permits and uses for external app navigation. This brings native setup forward from the existing app task without changing the APK.
+
+Full verification passed: https://github.com/aferlazzo/HelpMe/actions/runs/37516160752
+- Same original certificate and exact unchanged signed v4 package.
+- Original v1 upgrade to v4; browsable setup recovery.
+- Android pin-confirmation UI; actual pinned shortcut opens visible Buddy with no browser toolbar.
+- Shortcut survives force-stop and reopens standalone Buddy.
+- Setup recovery returns HomeActivity; native pinned status is correct.
+- Pin retained after same-signed reinstall.
+- Fresh v4 installation, launcher resolution, pin, standalone opening and reopening.
+- No fatal startup exception in the crash log.
+
+Artifact WRB-tested-native-recovery, ID 11438140442, contains UI XML, screenshots, task/shortcut state, signatures and recovery-result.txt. Local installer routing, absence of automatic-install dependency, and separate offline fallback checks passed. Netlify preview download is HTTP 200 with application/vnd.android.package-archive and exact matching APK hash; phone-size layout was reviewed. Production still awaits owner publication approval. Physical Android/Play Protect installation prompts were not tested; ADB installation in the emulator does not prove their outcome.
