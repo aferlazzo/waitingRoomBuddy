@@ -1,0 +1,5 @@
+<resources>
+  <string name="app_name">Waiting Room Buddy</string>
+  <string name="asset_statements" translatable="false">[{\"relation\":[\"delegate_permission/common.handle_all_urls\"],\"target\":{\"namespace\":\"web\",\"site\":\"https://waitingroombuddy.netlify.app\"}}]</string>
+  <color name="background">#101820</color>
+</resources>
