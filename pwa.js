@@ -6,9 +6,19 @@
   status.setAttribute('role', 'status');
   status.setAttribute('aria-live', 'polite');
   let installAttempt = 0;
+  let nativeInstalled = false;
   const standalone = () => window.matchMedia('(display-mode: standalone)').matches || navigator.standalone === true;
   const showStatus = text => { status.textContent = text; status.classList.remove('hidden'); };
   function refresh() {
+    if (android) {
+      button.disabled = false;
+      button.textContent = nativeInstalled ? "Download Android app again" : "Download Android app";
+      button.classList.remove("hidden");
+      showStatus(nativeInstalled
+        ? "Android reports Waiting Room Buddy is installed. Reopen it from your apps."
+        : "Download the Android app to install WRB with its own icon. Opening Buddy here does not confirm Android installation.");
+      return;
+    }
     if (standalone()) {
       button.classList.add('hidden');
       showStatus('Waiting Room Buddy is running as an app.');
@@ -77,6 +87,7 @@
     window.__wrbInstallPrompt = null;
     button.disabled = false;
     button.classList.add('hidden');
+    if (android) { refresh(); checkAndroidInstallation(); return; }
     showStatus('Waiting Room Buddy was installed. Open the WRB icon in your apps.');
   });
   window.matchMedia('(display-mode: standalone)').addEventListener('change', refresh);
@@ -88,5 +99,18 @@
       } catch (_) { /* Online Buddy and Android downloads remain available. */ }
     });
   }
+  async function checkAndroidInstallation() {
+    if (!android || typeof navigator.getInstalledRelatedApps !== 'function') return;
+    try {
+      const apps = await navigator.getInstalledRelatedApps();
+      nativeInstalled = apps.some(app => app.platform === 'play' && app.id === 'com.tonyferlazzo.wrb');
+      refresh();
+    } catch (_) { /* Detection is optional; the APK download always remains available. */ }
+  }
+  document.addEventListener('visibilitychange', () => {
+    if (document.visibilityState === 'visible') checkAndroidInstallation();
+  });
+  window.addEventListener('pageshow', checkAndroidInstallation);
   refresh();
+  checkAndroidInstallation();
 })();
