@@ -1,5 +1,5 @@
 const CACHE = 'wrb-v9-20261006';
-const CORE = ['/index.html', '/pwa.js', '/manifest.webmanifest', '/wrb-icon.svg', '/wrb-icon-192.png', '/wrb-icon-512.png'];
+const CORE = ['/index.html', '/android-install.html', '/pwa.js', '/manifest.webmanifest', '/wrb-icon.svg', '/wrb-icon-192.png', '/wrb-icon-512.png'];
 
 self.addEventListener('install', event => {
   event.waitUntil(caches.open(CACHE)
@@ -22,18 +22,19 @@ self.addEventListener('fetch', event => {
   const isControlFile = event.request.mode === 'navigate' ||
     ['/pwa.js', '/manifest.webmanifest', '/sw.js'].includes(url.pathname);
 
+  const navigationKey = url.pathname === '/' ? '/index.html' : url.pathname;
   if (isControlFile) {
     const fresh = fetch(event.request, { cache: 'no-store' });
     event.waitUntil(fresh.then(async response => {
       if (response.ok && url.pathname !== '/sw.js') {
         const copy = response.clone();
         const cache = await caches.open(CACHE);
-        await cache.put(event.request.mode === 'navigate' ? '/index.html' : event.request, copy);
+        await cache.put(event.request.mode === 'navigate' ? navigationKey : event.request, copy);
       }
     }).catch(() => {}));
     event.respondWith(
       fresh.catch(() =>
-        event.request.mode === 'navigate' ? caches.match('/index.html') : caches.match(event.request)
+        event.request.mode === 'navigate' ? caches.match(navigationKey) : caches.match(event.request)
       )
     );
     return;
