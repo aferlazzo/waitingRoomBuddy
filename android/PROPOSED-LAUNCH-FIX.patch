@@ -1,0 +1,30 @@
+Proposed incremental fix for the existing com.tonyferlazzo.wrb app.
+Approval required before building or changing the protected signing workflow.
+Preserve the original signing key, package identity, website and existing APKs.
+
+--- android/app/src/main/java/com/tonyferlazzo/wrb/HomeActivity.java
++++ android/app/src/main/java/com/tonyferlazzo/wrb/HomeActivity.java
+@@
+-        Intent buddy = new Intent();
++        Intent buddy = new Intent(Intent.ACTION_VIEW,
++            Uri.parse("https://waitingroombuddy.netlify.app/"));
+         buddy.setClassName(this, "com.google.androidbrowserhelper.trusted.LauncherActivity");
++        buddy.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+         startActivity(buddy);
+         finish();
+
+--- android/app/build.gradle
++++ android/app/build.gradle
+@@
+-        versionCode 3
+-        versionName '1.1'
++        versionCode 4
++        versionName '1.2'
+
+Then build using the existing protected owner signing pipeline and verify:
+1. Original v1 upgrade with matching signing certificate.
+2. Android native home-screen icon confirmation.
+3. Actual pinned icon opens Buddy content with no browser toolbar.
+4. Close/reopen, reinstall persistence and fresh-user installation.
+5. Website download serves the exact verified signed bytes.
+No production publication until verification and owner approval.
