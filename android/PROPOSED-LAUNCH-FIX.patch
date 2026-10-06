@@ -1,5 +1,5 @@
-Proposed incremental fix for the existing com.tonyferlazzo.wrb app.
-Approval required before building or changing the protected signing workflow.
+Applied incremental fix for the existing com.tonyferlazzo.wrb app.
+The owner approved the build; the existing workflow produced signed version 1.2 (code 4).
 Preserve the original signing key, package identity, website and existing APKs.
 
 --- android/app/src/main/java/com/tonyferlazzo/wrb/HomeActivity.java
