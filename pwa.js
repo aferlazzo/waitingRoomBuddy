@@ -1,8 +1,11 @@
 /* Installation support; Buddy's existing interaction stays in index.html. */
 (() => {
-  const release = 'wrb-20261006-04';
+  const release = 'wrb-20261006-05';
   const button = document.getElementById('installWRB');
   const status = document.getElementById('installStatus');
+  status.setAttribute('role', 'status');
+  status.setAttribute('aria-live', 'polite');
+  let installAttempt = 0;
   const standalone = () => window.matchMedia('(display-mode: standalone)').matches || navigator.standalone === true;
   const showStatus = text => { status.textContent = text; status.classList.remove('hidden'); };
   function refresh() {
@@ -18,6 +21,7 @@
   }
   window.__wrbShowInstall = refresh;
   button.addEventListener('click', async () => {
+    if (button.textContent === 'Check installation again') return;
     const prompt = window.__wrbInstallPrompt;
     if (!prompt) {
       if (/Android/i.test(navigator.userAgent)) {
@@ -28,20 +32,49 @@
       return;
     }
     button.disabled = true;
+    showStatus('Opening the browser’s installation confirmation…');
+    const attempt = ++installAttempt;
+    let timer;
     try {
-      await prompt.prompt();
-      const choice = await prompt.userChoice;
+      const result = await Promise.race([
+        (async () => {
+          await prompt.prompt();
+          return await prompt.userChoice;
+        })(),
+        new Promise(resolve => {
+          timer = setTimeout(() => resolve({ outcome: 'timeout' }), 8000);
+        })
+      ]);
+      if (attempt !== installAttempt) return;
       window.__wrbInstallPrompt = null;
-      button.classList.add('hidden');
-      showStatus(choice.outcome === 'accepted'
-        ? 'Installation requested. When it finishes, open the WRB icon in your apps.'
-        : 'Installation cancelled. You can keep using Buddy here.');
+      if (result.outcome === 'accepted') {
+        button.classList.add('hidden');
+        showStatus('Installation requested. When it finishes, open the WRB icon in your apps.');
+      } else if (result.outcome === 'timeout') {
+        button.classList.remove('hidden');
+        button.textContent = 'Check installation again';
+        showStatus('The browser has not returned an installation result. If a confirmation is open, finish it there. Otherwise, tap Check installation again to reload WRB and request a fresh installation offer.');
+      } else {
+        button.classList.remove('hidden');
+        button.textContent = 'Check installation again';
+        showStatus('Installation cancelled. Tap Check installation again when you want to retry.');
+      }
     } catch (_) {
-      showStatus('Installation did not finish. You can keep using Buddy here.');
-    } finally { button.disabled = false; }
+      window.__wrbInstallPrompt = null;
+      button.textContent = 'Check installation again';
+      showStatus('The browser could not open installation. Tap Check installation again to request a fresh offer.');
+    } finally {
+      clearTimeout(timer);
+      button.disabled = false;
+    }
+  });
+  button.addEventListener('click', () => {
+    if (button.textContent === 'Check installation again' && !button.disabled) location.reload();
   });
   window.addEventListener('appinstalled', () => {
+    ++installAttempt;
     window.__wrbInstallPrompt = null;
+    button.disabled = false;
     button.classList.add('hidden');
     showStatus('Waiting Room Buddy was installed. Open the WRB icon in your apps.');
   });
