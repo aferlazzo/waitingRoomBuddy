@@ -1,0 +1,41 @@
+plugins { id 'com.android.application' }
+def signingStore = System.getenv('SOHELPME_SIGNING_STORE')
+def signingPassword = System.getenv('SOHELPME_SIGNING_PASSWORD')
+android {
+    namespace 'com.tonyferlazzo.wrb'
+    compileSdk 36
+    defaultConfig {
+        applicationId 'com.tonyferlazzo.wrb'
+        minSdk 24
+        targetSdk 35
+        versionCode 1
+        versionName '1.0'
+    }
+    signingConfigs {
+        if (signingStore && signingPassword) {
+            release {
+                storeFile file(signingStore)
+                storePassword signingPassword
+                keyAlias 'sohelpme'
+                keyPassword signingPassword
+            }
+        }
+    }
+    buildTypes {
+        debug { applicationIdSuffix '.pilot' }
+        release {
+            minifyEnabled false
+            if (signingStore && signingPassword) signingConfig signingConfigs.release
+        }
+    }
+}
+tasks.configureEach { task ->
+    if (task.name == 'preReleaseBuild') {
+        task.doFirst {
+            if (!signingStore || !signingPassword) {
+                throw new GradleException('Protected Waiting Room Buddy release signing credentials must be configured. No unsigned release will be distributed.')
+            }
+        }
+    }
+}
+dependencies { implementation 'com.google.androidbrowserhelper:androidbrowserhelper:2.7.3' }
