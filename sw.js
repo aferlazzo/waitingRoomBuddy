@@ -1,4 +1,4 @@
-const CACHE = 'wrb-v8-20261006';
+const CACHE = 'wrb-v9-20261006';
 const CORE = ['/index.html', '/pwa.js', '/manifest.webmanifest', '/wrb-icon.svg', '/wrb-icon-192.png', '/wrb-icon-512.png'];
 
 self.addEventListener('install', event => {
