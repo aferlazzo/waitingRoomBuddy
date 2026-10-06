@@ -50,4 +50,18 @@ Automatic approval review initially rejected the incremental build because the u
 
 Signed version 1.2 (code 4) was produced by the existing protected pipeline in run 37512867753. Its certificate matches the original release and production assetlinks.json. SHA-256: fee3358855094311c1ecb081b83da95e6e80f5a965a4507eab0b9145fe309a7e. The original and v3 packages are retained.
 
-The v1-to-v4 upgrade, Android pin confirmation, actual pinned-icon launch, visible Buddy website, and absence of browser toolbar passed. The run failed later at the recovery setup assertion because Chrome remained foreground immediately after asynchronous reopen. Retest 37513938420 uses the same signed package and waits for the reopened Buddy before attempting setup recovery. This draft remains gated on that full verification and production publication approval.
+The initial v4 run passed the v1-to-v4 upgrade, Android pin confirmation, actual pinned-icon launch, visible Buddy website, and absence of browser toolbar, but failed its later setup recovery assertion. Retest 37513938420 additionally passed reopening after force-stop and pin retention after reinstall, then showed that the fresh-install setup request could be delivered to the existing Buddy task instead of bringing native setup forward. Its captured setup command returned the Chrome activity with result code 3.
+
+The website setup intent now explicitly includes NEW_TASK | CLEAR_TOP (launchFlags=0x14000000), which Chromium permits and uses for external app navigation. This brings native setup forward from the existing app task without changing the APK.
+
+Full verification passed: https://github.com/aferlazzo/HelpMe/actions/runs/37516160752
+- Same original certificate and exact unchanged signed v4 package.
+- Original v1 upgrade to v4; browsable setup recovery.
+- Android pin-confirmation UI; actual pinned shortcut opens visible Buddy with no browser toolbar.
+- Shortcut survives force-stop and reopens standalone Buddy.
+- Setup recovery returns HomeActivity; native pinned status is correct.
+- Pin retained after same-signed reinstall.
+- Fresh v4 installation, launcher resolution, pin, standalone opening and reopening.
+- No fatal startup exception in the crash log.
+
+Artifact WRB-tested-native-recovery, ID 11438140442, contains UI XML, screenshots, task/shortcut state, signatures and recovery-result.txt. Local installer routing, absence of automatic-install dependency, and separate offline fallback checks passed. Netlify preview download is HTTP 200 with application/vnd.android.package-archive and exact matching APK hash; phone-size layout was reviewed. Production still awaits owner publication approval. Physical Android/Play Protect installation prompts were not tested; ADB installation in the emulator does not prove their outcome.

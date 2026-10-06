@@ -10,7 +10,7 @@ Build/signing workflow: aferlazzo/HelpMe, android-stable-signing branch, .github
 
 Launcher icon: app/src/main/res/drawable/launcher_icon.png, copied from the existing 512px WRB web icon.
 
-Release verification includes Android lint, APK signature verification, same-certificate update builds, and emulator fresh-install/update startup checks. These startup checks do not prove Pixel standalone behavior or all interactions. Device installation and launch must be confirmed separately.
+Version 1.2 verification includes Android lint, APK signature verification, original-v1 update compatibility, fresh installation, Android pin confirmation, actual pinned-icon standalone display, reopening after force-stop, native setup recovery, and icon retention after reinstall. Successful evidence: https://github.com/aferlazzo/HelpMe/actions/runs/37516160752. These emulator checks use ADB installation and do not reproduce physical-device Google Play Protect installation prompts.
 
 Installer: /android-install.html; current candidate APK: /downloads/WRB-v4.apk. Earlier signed packages are retained.
 
