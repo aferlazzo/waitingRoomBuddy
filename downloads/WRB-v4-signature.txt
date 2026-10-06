@@ -1,0 +1,4 @@
+V2 Signer: certificate DN: CN=Anthony Ferlazzo, O=SoHelpMe, C=US
+V2 Signer: certificate SHA-256 digest: e356edb0663c39e9096e19b6f5315f586d5d3e716f3b6e3a5d24eb541a7bc369
+V2 Signer: certificate SHA-1 digest: e3bb70062f815c1379d185ad20a98fe9578e61df
+V2 Signer: certificate MD5 digest: ada2f8b9defec7f8895478a1ae4d481b

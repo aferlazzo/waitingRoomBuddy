@@ -44,4 +44,10 @@ The actual pinned shortcut invokes wrb://open. Logs then show LauncherActivity l
 
 Proposed incremental correction: ACTION_VIEW with the existing HTTPS WRB URL plus FLAG_ACTIVITY_NEW_TASK in HomeActivity.openBuddy. A new versionCode 4 (same package and signing key) is needed to deliver this binary change. Keep original signed APKs. Do not publish the v3 candidate as a verified standalone release.
 
-Automatic approval review rejected updating the existing protected build workflow to produce v4 because the user's instruction says not to rebuild. Human approval is required for this specific incremental build. No private credential needs to be supplied: the existing protected signing key remains configured. Physical Android/Play Protect prompts were not verified, and no physical-device fix is claimed.
+Automatic approval review initially rejected the incremental build because the user's instruction said not to rebuild. The owner subsequently explicitly approved this specific incremental correction. The existing protected signing key remains configured. Physical Android/Play Protect prompts were not verified, and no physical-device fix is claimed.
+
+## Approved incremental correction — October 6, 2026
+
+Signed version 1.2 (code 4) was produced by the existing protected pipeline in run 37512867753. Its certificate matches the original release and production assetlinks.json. SHA-256: fee3358855094311c1ecb081b83da95e6e80f5a965a4507eab0b9145fe309a7e. The original and v3 packages are retained.
+
+The v1-to-v4 upgrade, Android pin confirmation, actual pinned-icon launch, visible Buddy website, and absence of browser toolbar passed. The run failed later at the recovery setup assertion because Chrome remained foreground immediately after asynchronous reopen. Retest 37513938420 uses the same signed package and waits for the reopened Buddy before attempting setup recovery. This draft remains gated on that full verification and production publication approval.

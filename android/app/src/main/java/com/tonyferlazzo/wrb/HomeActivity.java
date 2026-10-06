@@ -118,8 +118,9 @@ public class HomeActivity extends Activity {
     }
 
     private void openBuddy() {
-        Intent buddy = new Intent();
+        Intent buddy = new Intent(Intent.ACTION_VIEW, Uri.parse("https://waitingroombuddy.netlify.app/"));
         buddy.setClassName(this, "com.google.androidbrowserhelper.trusted.LauncherActivity");
+        buddy.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
         startActivity(buddy);
         finish();
     }
