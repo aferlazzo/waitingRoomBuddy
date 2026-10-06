@@ -1,6 +1,6 @@
 /* Installation support; Buddy's existing interaction stays in index.html. */
 (() => {
-  const release = 'wrb-20261006-05';
+  const release = 'wrb-20261006-06';
   const button = document.getElementById('installWRB');
   const status = document.getElementById('installStatus');
   status.setAttribute('role', 'status');
@@ -21,6 +21,10 @@
   }
   window.__wrbShowInstall = refresh;
   button.addEventListener('click', async () => {
+    if (/Android/i.test(navigator.userAgent)) {
+      location.assign('/android-install.html');
+      return;
+    }
     if (button.textContent === 'Check installation again') return;
     const prompt = window.__wrbInstallPrompt;
     if (!prompt) {

@@ -1,0 +1,14 @@
+[
+  {
+    "relation": [
+      "delegate_permission/common.handle_all_urls"
+    ],
+    "target": {
+      "namespace": "android_app",
+      "package_name": "com.tonyferlazzo.wrb",
+      "sha256_cert_fingerprints": [
+        "E3:56:ED:B0:66:3C:39:E9:09:6E:19:B6:F5:31:5F:58:6D:5D:3E:71:6F:3B:6E:3A:5D:24:EB:54:1A:7B:C3:69"
+      ]
+    }
+  }
+]

@@ -11,3 +11,15 @@
   Cache-Control: no-cache
 /install.html
   Cache-Control: no-store
+
+/downloads/*.apk
+  Content-Type: application/vnd.android.package-archive
+  X-Content-Type-Options: nosniff
+  Cache-Control: public, max-age=3600
+
+/android-install.html
+  Cache-Control: no-cache
+
+/.well-known/assetlinks.json
+  Content-Type: application/json
+  Cache-Control: no-cache
