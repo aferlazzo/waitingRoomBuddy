@@ -8,3 +8,14 @@
     window_limit = 5
     window_size = 180
     aggregate_by = ["domain", "ip"]
+
+[[redirects]]
+  from = "/api/thinkagain"
+  to = "/.netlify/functions/thinkagain"
+  status = 200
+  force = true
+
+  [redirects.rate_limit]
+    window_limit = 5
+    window_size = 60
+    aggregate_by = ["domain", "ip"]
