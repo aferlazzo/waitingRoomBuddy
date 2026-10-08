@@ -23,3 +23,9 @@
 /.well-known/assetlinks.json
   Content-Type: application/json
   Cache-Control: no-cache
+
+/thinkagain-install.html
+  Cache-Control: no-store
+
+/downloads/ThinkAgain.apk
+  Content-Disposition: attachment; filename="ThinkAgain.apk"
