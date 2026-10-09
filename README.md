@@ -15,3 +15,5 @@ The Android package `com.tonyferlazzo.wrb` opens this existing site using Google
 Android install buttons use the APK installer page rather than depending on Chrome's optional browser installation offer. Other platforms continue using PWA installation. Signed APK bytes, checksum, and website certificate association are published together after the release tests pass.
 
 Story variety: WRB rotates through 64 subjects across interesting, surprise, and conversation requests. This browser remembers explored subjects and the latest 30 response excerpts across visits and Start over. These excerpts are sent to the AI service to discourage repeated stories; octopus trivia is excluded. Memory is local to the browser/device and is lost if site data is cleared. If storage is unavailable, memory lasts for the current page session.
+
+Let’s talk supports typed replies and keeps the latest 24 conversation messages while the page is open. Switching activities and returning to Let’s talk resumes that conversation; Start over clears it. Conversation messages are sent to the AI service for each reply. A failed send preserves the draft for retry.

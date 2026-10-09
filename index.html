@@ -17,7 +17,7 @@ button{background:#22333f;color:white;border:1px solid #526674;border-radius:12p
 .times button{flex:1;min-width:90px}.active{background:#d9f4f1!important;color:#102028!important}
 #panel{margin-top:20px;background:#0f1920;border-radius:14px;padding:20px;font-size:19px;line-height:1.5;min-height:120px}
 #title{font-weight:bold;margin-bottom:8px}.primary{width:100%;margin-top:16px;background:#d9f4f1;color:#102028;font-weight:bold}.secondary{width:100%;margin-top:10px}
-.small{color:#93a7b3;font-size:13px;margin-top:18px}.errorDetail{color:#f0c8c8;font-size:14px;margin-top:10px}.hidden{display:none!important}@media(max-width:520px){.grid{grid-template-columns:1fr}}
+.chatTurn{margin:0 0 14px;white-space:pre-wrap}.chatRole{font-size:14px;font-weight:bold;color:#c4d0d8}.replyLabel{display:block;margin-top:16px;font-size:17px}#buddyReply{width:100%;margin-top:8px;padding:12px;border:1px solid #526674;border-radius:10px;background:#22333f;color:white;font:inherit;font-size:18px;min-height:90px}button:disabled{opacity:.6;cursor:wait}.small{color:#93a7b3;font-size:13px;margin-top:18px}.errorDetail{color:#f0c8c8;font-size:14px;margin-top:10px}.hidden{display:none!important}@media(max-width:520px){.grid{grid-template-columns:1fr}}
 </style>
 </head><body><main>
 <h1>Waiting Room Buddy</h1><p class="sub">Got a few minutes? I'll keep you company.</p>
@@ -34,18 +34,29 @@ button{background:#22333f;color:white;border:1px solid #526674;border-radius:12p
 <script>
 var chosenTime="No idea";
 var buddyBusy=false;
+var buddyConversation=[];
 var buddyStorage;try{buddyStorage=localStorage}catch(_){buddyStorage={getItem:function(){return null},setItem:function(){}}}
 var buddyMemory=WRBVariety.createMemory(buddyStorage);
 function out(title,text,buttons){document.getElementById("title").textContent=title;document.getElementById("text").innerHTML=text;document.getElementById("controls").innerHTML=buttons||""}
 function setTime(btn,t){chosenTime=t;var bs=document.querySelectorAll(".times button");for(var i=0;i<bs.length;i++)bs[i].className="";btn.className="active";out(t+" selected","Now pick what sounds good.","")}
 function esc(s){var d=document.createElement("div");d.textContent=s;return d.innerHTML}
-async function askBuddy(mode){
+function renderTalk(draft,error){
+ var turns=buddyConversation.map(function(turn){return '<div class="chatTurn"><div class="chatRole">'+(turn.role==="user"?"You":"Buddy")+'</div>'+esc(turn.content)+'</div>'}).join("");
+ var controls='<form id="buddyReplyForm" onsubmit="sendBuddyReply(event)"><label class="replyLabel" for="buddyReply">Your reply</label><textarea id="buddyReply" maxlength="1000" placeholder="What do you think?"'+(buddyBusy?' disabled':'')+'>'+esc(draft||"")+'</textarea><button class="primary" type="submit"'+(buddyBusy?' disabled':'')+'>'+(buddyBusy?'Buddy is replying…':'Send reply')+'</button></form><button class="secondary" onclick="resetBuddy()"'+(buddyBusy?' disabled':'')+'>Start over</button>';
+ out("Let’s talk",turns+(error?'<div class="errorDetail" role="alert">'+esc(error)+'</div>':""),controls);
+}
+function sendBuddyReply(event){
+ event.preventDefault();
+ var reply=document.getElementById("buddyReply").value.trim();
+ if(reply&&!buddyBusy)askBuddy("talk",reply);
+}
+async function askBuddy(mode,reply){
  if(buddyBusy)return;
  buddyBusy=true;
- var topicId=["interesting","surprise","talk"].includes(mode)?buddyMemory.next():null;
- out("Thinking…","Finding something worthwhile for you.","");
+ var topicId=!reply&&["interesting","surprise","talk"].includes(mode)?buddyMemory.next():null;
+ if(mode==="talk"&&reply)renderTalk(reply);else out("Thinking…","Finding something worthwhile for you.","");
  try{
-  var r=await fetch("/api/buddy",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({mode:mode,time:chosenTime,topicId:topicId,recentStories:buddyMemory.recent()})});
+  var r=await fetch("/api/buddy",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({mode:mode,time:chosenTime,topicId:topicId,recentStories:buddyMemory.recent(),reply:reply||"",conversation:mode==="talk"?buddyConversation:[]})});
   var raw=await r.text(),d={};
   try{d=JSON.parse(raw)}catch(_){d={error:"WRB received an unexpected server response ("+r.status+")."}}
   if(!r.ok){
@@ -55,17 +66,24 @@ async function askBuddy(mode){
   }
   if(typeof d.text!=="string"||!d.text.trim())throw new Error("Buddy returned an empty response. Please try again.");
   buddyMemory.remember(topicId,d.text);
+  if(mode==="talk"){
+   if(reply)buddyConversation.push({role:"user",content:reply});
+   buddyConversation.push({role:"assistant",content:d.text});
+   buddyConversation=buddyConversation.slice(-24);
+   buddyBusy=false;renderTalk();return;
+  }
   var label=mode==="use"?"Use this time":"Waiting Room Buddy";
   var again=mode==="talk"?"":'<button class="primary" onclick="askBuddy(&quot;'+mode+'&quot;)">Another one</button>';
   out(label,esc(d.text),again+'<button class="secondary" onclick="resetBuddy()">Start over</button>');
  }catch(e){
+  if(mode==="talk"&&buddyConversation.length){buddyBusy=false;renderTalk(reply,e.message);return;}
   out("Couldn’t reach Buddy","The AI connection did not respond.<div class=\"errorDetail\">"+esc(e.message)+"</div>",'<button class="primary" onclick="askBuddy(&quot;'+mode+'&quot;)">Try again</button><button class="secondary" onclick="resetBuddy()">Start over</button>');
  }finally{buddyBusy=false;}
 }
 function interesting(){askBuddy("interesting")}
 function today(){askBuddy("today")}
-function talk(){askBuddy("talk")}
+function talk(){if(buddyBusy)return;if(buddyConversation.length)renderTalk();else askBuddy("talk")}
 function useTime(){askBuddy("use")}
 async function shareWRB(){const data={title:"Waiting Room Buddy",text:"Try Waiting Room Buddy when you have a few minutes to wait.",url:location.origin};if(navigator.share){try{await navigator.share(data);return}catch(e){if(e.name==="AbortError")return}}try{await navigator.clipboard.writeText(location.origin);out("Share WRB","The WRB link has been copied. Paste it into a text, email, or message.","")}catch(e){out("Share WRB","Share this address: "+location.origin,"")}}
-function resetBuddy(){chosenTime="No idea";var bs=document.querySelectorAll(".times button");for(var i=0;i<bs.length;i++)bs[i].className="";out("Start here","Choose a time, then choose what sounds good.","")}
+function resetBuddy(){if(buddyBusy)return;buddyConversation=[];chosenTime="No idea";var bs=document.querySelectorAll(".times button");for(var i=0;i<bs.length;i++)bs[i].className="";out("Start here","Choose a time, then choose what sounds good.","")}
 </script><script src="/pwa.js"></script></body></html>
