@@ -1,5 +1,5 @@
-const CACHE = 'wrb-v10-20261006';
-const CORE = ['/index.html', '/android-install.html', '/pwa.js', '/manifest.webmanifest', '/wrb-icon.svg', '/wrb-icon-192.png', '/wrb-icon-512.png'];
+const CACHE = 'wrb-v11-20261009-variety';
+const CORE = ['/index.html', '/buddy-variety.js', '/android-install.html', '/pwa.js', '/manifest.webmanifest', '/wrb-icon.svg', '/wrb-icon-192.png', '/wrb-icon-512.png'];
 
 self.addEventListener('install', event => {
   event.waitUntil(caches.open(CACHE)
@@ -20,7 +20,7 @@ self.addEventListener('fetch', event => {
   // Always fetch navigations and PWA control files from the network first so
   // a previously installed WRB cannot trap the device on an old release.
   const isControlFile = event.request.mode === 'navigate' ||
-    ['/pwa.js', '/manifest.webmanifest', '/sw.js'].includes(url.pathname);
+    ['/pwa.js', '/buddy-variety.js', '/manifest.webmanifest', '/sw.js'].includes(url.pathname);
 
   const navigationKey = url.pathname === '/' ? '/index.html' : url.pathname;
   if (isControlFile) {
