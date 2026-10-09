@@ -6,7 +6,7 @@ Production: https://waitingroombuddy.netlify.app/
 
 Netlify deploys the repository root and `netlify/functions` from `main`. The Netlify GitHub app must include `waitingRoomBuddy` in its selected repositories for pushes to trigger automatic deployments. Environment-variable changes take effect on a new deployment.
 
-The PWA uses network-first navigation and installation files, with a cached shell for offline opening. AI requests require a connection. The existing allowance is 20 requests per device per UTC day.
+The PWA uses network-first navigation and installation files, with a cached shell for offline opening. AI requests require a connection. There is no per-device daily request cutoff. The server retains its short-term limit of five Buddy requests per IP in three minutes; the client also prevents overlapping requests.
 
 Android installation: https://waitingroombuddy.netlify.app/android-install.html
 

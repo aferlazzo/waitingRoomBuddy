@@ -1,4 +1,4 @@
-const CACHE = 'wrb-v11-20261009-variety';
+const CACHE = 'wrb-v12-20261009-no-daily-cutoff';
 const CORE = ['/index.html', '/buddy-variety.js', '/android-install.html', '/pwa.js', '/manifest.webmanifest', '/wrb-icon.svg', '/wrb-icon-192.png', '/wrb-icon-512.png'];
 
 self.addEventListener('install', event => {

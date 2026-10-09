@@ -55,6 +55,7 @@ test('UI sends history, blocks concurrent clicks, and retains memory on Start ov
   const elements = Object.fromEntries(['title','text','controls'].map(id=>[id,{}]));
   let release, requests=0, body;
   const saved=storage();
+  saved.setItem('wrb-ai-usage-v1', JSON.stringify({date:new Date().toISOString().slice(0,10),count:20}));
   const context={WRBVariety:{createMemory},localStorage:saved,document:{getElementById:id=>elements[id],querySelectorAll:()=>[],createElement:()=>({set textContent(v){this.innerHTML=v;}})},fetch:async(_,opts)=>{requests++;body=JSON.parse(opts.body);await new Promise(resolve=>release=resolve);return {ok:true,text:async()=>JSON.stringify({text:'Fresh story'})};}};
   vm.createContext(context);vm.runInContext(script,context);
   const first=context.askBuddy('interesting');
@@ -68,5 +69,26 @@ test('UI sends history, blocks concurrent clicks, and retains memory on Start ov
   assert.notEqual(body.topicId,firstId);
   assert.deepEqual(body.recentStories,['Fresh story']);
   release();await second;
+  assert.equal(context.buddyBusy,false);
+  // A previous exhausted daily counter cannot lock this device out.
+  assert.equal(requests,2);
+});
+test('more than twenty successful responses are allowed and a failed request can be retried', async () => {
+  const html=fs.readFileSync(path.join(__dirname,'../index.html'),'utf8');
+  const script=html.match(/<script>\s*([\s\S]*?)<\/script>/)[1];
+  const elements=Object.fromEntries(['title','text','controls'].map(id=>[id,{}]));
+  let calls=0, fail=true;
+  const context={WRBVariety:{createMemory},localStorage:storage(),document:{getElementById:id=>elements[id],querySelectorAll:()=>[],createElement:()=>({set textContent(v){this.innerHTML=v;}})},fetch:async()=>{
+    calls++;
+    return fail ? {ok:false,status:429,text:async()=>'<html>Too many requests</html>'} : {ok:true,status:200,text:async()=>JSON.stringify({text:'A useful reply '+calls})};
+  }};
+  vm.createContext(context);vm.runInContext(script,context);
+  await context.askBuddy('interesting');
+  assert.ok(elements.text.innerHTML.includes('wait a few minutes'));
+  assert.equal(context.buddyMemory.recent().length,0);
+  fail=false;
+  for(let i=0;i<25;i++)await context.askBuddy('interesting');
+  assert.equal(calls,26);
+  assert.equal(context.buddyMemory.recent().length,25);
   assert.equal(context.buddyBusy,false);
 });
