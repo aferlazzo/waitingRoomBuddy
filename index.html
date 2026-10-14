@@ -47,6 +47,13 @@ function showAnswerAtTop(target){
   window.scrollTo({top:Math.max(0,y),behavior:"auto"});
  });});
 }
+function showAnswerAtTop(){
+ requestAnimationFrame(function(){
+  var target=document.querySelector("#text .chatTurn:last-child")||document.getElementById("panel");
+  if(!target)return;
+  window.scrollTo({top:Math.max(0,window.scrollY+target.getBoundingClientRect().top-12),behavior:"instant"});
+ });
+}
 function setTime(btn,t){chosenTime=t;var bs=document.querySelectorAll(".times button");for(var i=0;i<bs.length;i++)bs[i].className="";btn.className="active";out(t+" selected","Now pick what sounds good.","")}
 function esc(s){var d=document.createElement("div");d.textContent=s;return d.innerHTML}
 function renderTalk(draft,error){
@@ -79,11 +86,12 @@ async function askBuddy(mode,reply){
    if(reply)buddyConversation.push({role:"user",content:reply});
    buddyConversation.push({role:"assistant",content:d.text});
    buddyConversation=buddyConversation.slice(-24);
-   buddyBusy=false;renderTalk();return;
+   buddyBusy=false;renderTalk();showAnswerAtTop();return;
   }
   var label=mode==="use"?"Use this time":"Waiting Room Buddy";
   var again=mode==="talk"?"":'<button class="primary" onclick="askBuddy(&quot;'+mode+'&quot;)">Another one</button>';
   out(label,esc(d.text),again+'<button class="secondary" onclick="resetBuddy()">Start over</button>');
+  showAnswerAtTop();
   showAnswerAtTop();
  }catch(e){
   if(mode==="talk"&&buddyConversation.length){buddyBusy=false;renderTalk(reply,e.message);return;}
