@@ -5,112 +5,17 @@
   const status = document.getElementById('installStatus');
   status.setAttribute('role', 'status');
   status.setAttribute('aria-live', 'polite');
-  let installAttempt = 0;
-  let nativeInstalled = false;
-  const standalone = () => window.matchMedia('(display-mode: standalone)').matches || navigator.standalone === true;
-  const showStatus = text => { status.textContent = text; status.classList.remove('hidden'); };
-  function refresh() {
-    if (android) {
-      button.disabled = false;
-      button.textContent = nativeInstalled ? "Download Android app again" : "Download Android app";
-      button.classList.remove("hidden");
-      showStatus(nativeInstalled
-        ? "Android reports Waiting Room Buddy is installed. Reopen it from your apps."
-        : "Download the Android app to install WRB with its own icon. Opening Buddy here does not confirm Android installation.");
-      return;
-    }
-    if (standalone()) {
-      button.classList.add('hidden');
-      showStatus('Waiting Room Buddy is running as an app.');
-    } else {
-      button.disabled = false;
-      button.textContent = android ? 'Download Android app' : 'Install Waiting Room Buddy';
-      button.classList.remove('hidden');
-      if (android) showStatus('Install the Android app, then reopen it from the Waiting Room Buddy icon in your apps.');
-      else status.classList.add('hidden');
-    }
-  }
-  window.__wrbShowInstall = refresh;
-  button.addEventListener('click', async () => {
-    if (android) {
-      location.assign('/android-install.html');
-      return;
-    }
-    if (button.textContent === 'Check installation again') return;
-    const prompt = window.__wrbInstallPrompt;
-    if (!prompt) {
-      showStatus('To install WRB, use this browser’s Install or Add to Home Screen command. On iPhone or iPad, open WRB in Safari and choose Share, then Add to Home Screen.');
-      return;
-    }
-    button.disabled = true;
-    showStatus('Opening the browser’s installation confirmation…');
-    const attempt = ++installAttempt;
-    let timer;
-    try {
-      const result = await Promise.race([
-        (async () => {
-          await prompt.prompt();
-          return await prompt.userChoice;
-        })(),
-        new Promise(resolve => {
-          timer = setTimeout(() => resolve({ outcome: 'timeout' }), 8000);
-        })
-      ]);
-      if (attempt !== installAttempt) return;
-      window.__wrbInstallPrompt = null;
-      if (result.outcome === 'accepted') {
-        button.classList.add('hidden');
-        showStatus('Installation requested. When it finishes, open the WRB icon in your apps.');
-      } else if (result.outcome === 'timeout') {
-        button.classList.remove('hidden');
-        button.textContent = 'Check installation again';
-        showStatus('The browser has not returned an installation result. If a confirmation is open, finish it there. Otherwise, tap Check installation again to reload WRB and request a fresh installation offer.');
-      } else {
-        button.classList.remove('hidden');
-        button.textContent = 'Check installation again';
-        showStatus('Installation cancelled. Tap Check installation again when you want to retry.');
-      }
-    } catch (_) {
-      window.__wrbInstallPrompt = null;
-      button.textContent = 'Check installation again';
-      showStatus('The browser could not open installation. Tap Check installation again to request a fresh offer.');
-    } finally {
-      clearTimeout(timer);
-      button.disabled = false;
-    }
-  });
+  button.classList.remove('hidden');
+  button.textContent = android ? 'Install / download Android app' : 'Install Waiting Room Buddy';
   button.addEventListener('click', () => {
-    if (button.textContent === 'Check installation again' && !button.disabled) location.reload();
+    if (android) { location.assign('/android-install.html'); return; }
+    status.textContent = 'Use this browser’s Install or Add to Home Screen command. On iPhone or iPad, open WRB in Safari and choose Share, then Add to Home Screen.';
+    status.classList.remove('hidden');
   });
-  window.addEventListener('appinstalled', () => {
-    ++installAttempt;
-    window.__wrbInstallPrompt = null;
-    button.disabled = false;
-    button.classList.add('hidden');
-    if (android) { refresh(); checkAndroidInstallation(); return; }
-    showStatus('Waiting Room Buddy was installed. Open the WRB icon in your apps.');
-  });
-  window.matchMedia('(display-mode: standalone)').addEventListener('change', refresh);
-  if ('serviceWorker' in navigator) {
-    window.addEventListener('load', async () => {
-      try {
-        const registration = await navigator.serviceWorker.register('/sw.js', { updateViaCache: 'none' });
-        await registration.update();
-      } catch (_) { /* Online Buddy and Android downloads remain available. */ }
-    });
-  }
-  async function checkAndroidInstallation() {
-    if (!android || typeof navigator.getInstalledRelatedApps !== 'function') return;
+  if ('serviceWorker' in navigator) window.addEventListener('load', async () => {
     try {
-      const apps = await navigator.getInstalledRelatedApps();
-      nativeInstalled = apps.some(app => app.platform === 'play' && app.id === 'com.tonyferlazzo.wrb');
-      refresh();
-    } catch (_) { /* Detection is optional; the APK download always remains available. */ }
-  }
-  document.addEventListener('visibilitychange', () => {
-    if (document.visibilityState === 'visible') checkAndroidInstallation();
+      const registration = await navigator.serviceWorker.register('/sw.js', { updateViaCache: 'none' });
+      await registration.update();
+    } catch (_) { /* Online Buddy and Android downloads remain available. */ }
   });
-  window.addEventListener('pageshow', checkAndroidInstallation);
-  refresh();
-  checkAndroidInstallation();
 })();

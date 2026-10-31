@@ -3,16 +3,26 @@
   <application android:label="Waiting Room Buddy" android:icon="@drawable/launcher_icon"
       android:allowBackup="false" android:manageSpaceActivity="com.google.androidbrowserhelper.trusted.ManageDataLauncherActivity" android:theme="@android:style/Theme.Translucent.NoTitleBar">
     <meta-data android:name="asset_statements" android:resource="@string/asset_statements"/>
+    <activity android:name=".HomeActivity" android:exported="true" android:label="WRB"
+        android:theme="@android:style/Theme.Material.Light.NoActionBar">
+      <intent-filter>
+        <action android:name="android.intent.action.MAIN"/>
+        <category android:name="android.intent.category.LAUNCHER"/>
+      </intent-filter>
+      <intent-filter>
+        <action android:name="android.intent.action.VIEW"/>
+        <category android:name="android.intent.category.DEFAULT"/>
+        <category android:name="android.intent.category.BROWSABLE"/>
+        <data android:scheme="wrb" android:host="setup"/>
+        <data android:scheme="wrb" android:host="open"/>
+      </intent-filter>
+    </activity>
     <activity android:name="com.google.androidbrowserhelper.trusted.LauncherActivity"
         android:exported="true" android:label="Waiting Room Buddy">
       <meta-data android:name="android.support.customtabs.trusted.DEFAULT_URL"
           android:value="https://waitingroombuddy.netlify.app/"/>
       <meta-data android:name="android.support.customtabs.trusted.STATUS_BAR_COLOR" android:resource="@color/background"/>
       <meta-data android:name="android.support.customtabs.trusted.NAVIGATION_BAR_COLOR" android:resource="@color/background"/>
-      <intent-filter>
-        <action android:name="android.intent.action.MAIN"/>
-        <category android:name="android.intent.category.LAUNCHER"/>
-      </intent-filter>
     </activity>
     <activity android:name="com.google.androidbrowserhelper.trusted.ManageDataLauncherActivity" android:exported="false">
       <meta-data android:name="android.support.customtabs.trusted.MANAGE_SPACE_URL" android:value="https://waitingroombuddy.netlify.app/"/>
