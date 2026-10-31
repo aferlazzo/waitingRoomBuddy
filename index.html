@@ -2,6 +2,8 @@
 <html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
 <title>Waiting Room Buddy</title>
 <link rel="manifest" href="/manifest.webmanifest">
+<link rel="icon" href="/wrb-icon.svg" type="image/svg+xml">
+<link rel="apple-touch-icon" href="/wrb-icon-192.png">
 <meta name="theme-color" content="#101820">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
@@ -57,9 +59,4 @@ function talk(){askBuddy("talk")}
 function useTime(){askBuddy("use")}
 async function shareWRB(){const data={title:"Waiting Room Buddy",text:"Try Waiting Room Buddy when you have a few minutes to wait.",url:location.origin};if(navigator.share){try{await navigator.share(data);return}catch(e){if(e.name==="AbortError")return}}try{await navigator.clipboard.writeText(location.origin);out("Share WRB","The WRB link has been copied. Paste it into a text, email, or message.","")}catch(e){out("Share WRB","Share this address: "+location.origin,"")}}
 function resetBuddy(){chosenTime="No idea";var bs=document.querySelectorAll(".times button");for(var i=0;i<bs.length;i++)bs[i].className="";out("Start here","Choose a time, then choose what sounds good.","")}
-window.__wrbShowInstall=function(){var b=document.getElementById("installWRB");if(b&&window.__wrbInstallPrompt)b.classList.remove("hidden");};
-document.getElementById("installWRB").addEventListener("click",async function(){var e=window.__wrbInstallPrompt;if(!e)return;this.disabled=true;await e.prompt();var c=await e.userChoice;window.__wrbInstallPrompt=null;if(c&&c.outcome==="accepted"){this.textContent="Waiting Room Buddy installed";document.getElementById("installStatus").textContent="Look for the WRB icon in your apps.";document.getElementById("installStatus").classList.remove("hidden");}else{this.disabled=false;this.textContent="Install Waiting Room Buddy";}});
-window.addEventListener("appinstalled",function(){var b=document.getElementById("installWRB");b.textContent="Waiting Room Buddy installed";b.disabled=true;b.classList.remove("hidden");});
-window.__wrbShowInstall();
-if("serviceWorker" in navigator){window.addEventListener("load",function(){navigator.serviceWorker.register("/sw.js").catch(function(){});});}
-</script></body></html>
+</script><script src="/pwa.js"></script></body></html>
